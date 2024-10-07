@@ -1,6 +1,8 @@
 # OpenAI-TTS-WebUI
 This is a simple OpenAI TTS Web built by MaktubCN, you are welcome to use it 👏!
 
+![interface](interface.png)
+
 A web-based Text-to-Speech (TTS) application that allows users to convert text into audio using various voices and output formats.
 
 ## Features
