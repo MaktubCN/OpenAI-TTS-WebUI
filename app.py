@@ -5,7 +5,7 @@ import requests
 import tempfile
 from languages import languages
 
-def generate_audio(input_text, voice, output_format, base_url_input, api_key_input, request: gr.Request):
+def generate_audio(input_text, voice, output_format, model, base_url_input, api_key_input, request: gr.Request):
     # 获取 URL 参数
     query_params = request.query_params
     # 优先使用 URL 参数中的 base_url 和 api_key
@@ -13,7 +13,7 @@ def generate_audio(input_text, voice, output_format, base_url_input, api_key_inp
     api_key = query_params.get("api_key", api_key_input)
     # 准备请求负载
     payload = {
-        "model": "tts-1",
+        "model": model,  # 使用选择的模型
         "input": input_text,
         "voice": voice.lower(),
         "format": output_format
@@ -38,8 +38,8 @@ def generate_audio(input_text, voice, output_format, base_url_input, api_key_inp
     # 返回文件路径
     return temp_file.name
 
-def on_generate_click(input_text_value, voice_value, output_format_value, base_url_value, api_key_value, request: gr.Request):
-    audio_path = generate_audio(input_text_value, voice_value, output_format_value, base_url_value, api_key_value, request)
+def on_generate_click(input_text_value, voice_value, output_format_value, model_value, base_url_value, api_key_value, request: gr.Request):
+    audio_path = generate_audio(input_text_value, voice_value, output_format_value, model_value, base_url_value, api_key_value, request)
     return audio_path
 
 def update_settings_from_url(request: gr.Request):
@@ -63,6 +63,7 @@ def update_language(language_choice):
         gr.update(label=labels['input_text_label'], placeholder=labels['input_text_placeholder']),  # input_text
         gr.update(label=labels['voice_label']),  # voice
         gr.update(label=labels['output_format_label']),  # output_format
+        gr.update(label=labels['model_label']),  # model
         gr.update(value=labels['generate_button_label']),  # generate_button
         gr.update(label=labels['output_audio_label']),  # audio_output
         gr.update(label=labels['settings_label']),  # settings_accordion
@@ -94,6 +95,8 @@ with gr.Blocks(css=None, theme="Zarkel/IBM_Carbon_Theme", title="TTS Web") as de
             intro_text = gr.Markdown(languages["中文"]["intro"])  # 初始加载中文的介绍
             # 输入文本
             input_text = gr.Textbox(label="输入文本", placeholder="请输入要合成的文本")
+            # 选择模型
+            model = gr.Radio(choices=["tts-1", "tts-1-hd"], label="模型", value="tts-1")  # 新增模型选择
             # 选择声音
             voice = gr.Radio(choices=["Alloy", "Echo", "Fable", "Onyx", "Nova", "Shimmer"], label="声音", value="Alloy")
             # 选择输出格式
@@ -130,6 +133,7 @@ with gr.Blocks(css=None, theme="Zarkel/IBM_Carbon_Theme", title="TTS Web") as de
             input_text,
             voice,
             output_format,
+            model,  # 更新模型标签
             generate_button,
             audio_output,
             settings_accordion,
@@ -159,7 +163,7 @@ with gr.Blocks(css=None, theme="Zarkel/IBM_Carbon_Theme", title="TTS Web") as de
     # 按钮点击事件
     generate_button.click(
         on_generate_click,
-        inputs=[input_text, voice, output_format, base_url_input, api_key_input],
+        inputs=[input_text, voice, output_format, model, base_url_input, api_key_input],
         outputs=[audio_output]
     )
 
